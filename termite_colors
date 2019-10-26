@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Pass the theme as parameter
+THEME="$1"
+# Change to your configuration file and theme folder
+CONFIG=$HOME/.config/termite/config
+THEMEDIR=`dirname $CONFIG`
+
+
+if [ -z $1 ]; then
+	echo "Currently available themes:"
+	for f in $THEMEDIR/*.termite; do
+		# Just a dumb way to remove both the extension and the path
+		f=${f##*/}
+		f=${f%.*}
+		echo $f
+	done
+	exit 1
+fi
+
+
+if  [ ! -f "$THEMEDIR/$THEME.termite" ]; then
+	echo "The theme $THEME doesn't exists!"
+	exit 1
+fi
+
+
+BANNER="# TERMITE_COLORS
+# 
+# Do not edit below this comment
+# Every edit will be deleted by termite_colors script
+#
+# Content from theme '$THEME'
+# Original theme location: $THEMEDIR/$THEME.termite'
+# Generated on `date`
+#
+######################################################
+[colors]
+"
+
+
+cp $CONFIG $CONFIG.old
+
+sed -i -z "s/\# TERMITE_COLORS.*//g" $CONFIG 
+
+echo "$BANNER" >> $CONFIG
+cat $THEMEDIR/$THEME.termite >> $CONFIG
+
+killall -USR1 termite
